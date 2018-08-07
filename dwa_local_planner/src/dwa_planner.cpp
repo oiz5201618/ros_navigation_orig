@@ -343,14 +343,8 @@ namespace dwa_local_planner {
     t_diff = end_t - start_t;
     
     control_times++;
-
-    // Discard the first time data.
-    if (control_times == 1) {
-
-    } else {
-      accumlate_time += t_diff;
-      benchmark_file << (control_times - 1) << "\t" << std::setprecision(9) << t_diff << "\t" << accumlate_time / (control_times - 1) << "\n";
-    }
+    accumlate_time += t_diff;
+    benchmark_file << control_times << "\t" << std::setprecision(9) << t_diff << "\t" << accumlate_time / control_times << "\n";
     //
 
     if(publish_traj_pc_)
