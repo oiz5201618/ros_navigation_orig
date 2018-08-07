@@ -761,20 +761,21 @@ namespace move_base {
 
       //for timing that gives real time even in simulation
       //ros::WallTime start = ros::WallTime::now();
-      // For timing uncomment
+      /* For timing uncomment
       struct timeval start, end;
       double start_t, end_t, t_diff;
       gettimeofday(&start, NULL);
+      */
 
       //the real work on pursuing a goal is done here
       bool done = executeCycle(goal, global_plan);
 
-      // For timing uncomment
+      /* For timing uncomment
       gettimeofday(&end, NULL);
       start_t = start.tv_sec + double(start.tv_usec) / 1e6;
       end_t = end.tv_sec + double(end.tv_usec) / 1e6;
       t_diff = end_t - start_t;
-      
+
       control_times++;
 
       // Discard the first time data.
@@ -784,7 +785,7 @@ namespace move_base {
         accumlate_time += t_diff;
         benchmark_file << (control_times - 1) << "\t" << std::setprecision(9) << t_diff << "\t" << accumlate_time / (control_times - 1) << "\n";
       }
-      //
+      */
 
       //if we're done, then we'll return from execute
       if(done)
@@ -902,6 +903,12 @@ namespace move_base {
       case CONTROLLING:
         ROS_DEBUG_NAMED("move_base","In controlling state.");
 
+        // For timing uncomment
+        struct timeval start, end;
+        double start_t, end_t, t_diff;
+        gettimeofday(&start, NULL);
+        //
+
         //check to see if we've reached our goal
         if(tc_->isGoalReached()){
           ROS_DEBUG_NAMED("move_base","Goal reached!");
@@ -964,6 +971,15 @@ namespace move_base {
         }
         }
 
+        // For timing uncomment
+        gettimeofday(&end, NULL);
+        start_t = start.tv_sec + double(start.tv_usec) / 1e6;
+        end_t = end.tv_sec + double(end.tv_usec) / 1e6;
+        t_diff = end_t - start_t;
+        control_times++;
+        accumlate_time += t_diff;
+        benchmark_file << control_times << "\t" << std::setprecision(9) << t_diff << "\t" << accumlate_time / control_times << "\n";
+        //
         break;
 
       //we'll try to clear out space with any user-provided recovery behaviors
