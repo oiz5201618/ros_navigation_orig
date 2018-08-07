@@ -163,6 +163,15 @@ namespace move_base {
     //we'll start executing recovery behaviors at the beginning of our list
     recovery_index_ = 0;
 
+    //open benchmark file
+    std::string bench_file;
+    const char *cstr;
+    private_nh.param("benchmark_data_file", bench_file, std::string("data.txt"));
+    cstr = bench_file.c_str();
+    benchmark_file.open(cstr);
+    accumlate_time = 0.0;
+    control_times = 0;
+
     //we're all set up now so we can start the action server
     as_->start();
 
@@ -751,10 +760,31 @@ namespace move_base {
       }
 
       //for timing that gives real time even in simulation
-      ros::WallTime start = ros::WallTime::now();
+      //ros::WallTime start = ros::WallTime::now();
+      // For timing uncomment
+      struct timeval start, end;
+      double start_t, end_t, t_diff;
+      gettimeofday(&start, NULL);
 
       //the real work on pursuing a goal is done here
       bool done = executeCycle(goal, global_plan);
+
+      // For timing uncomment
+      gettimeofday(&end, NULL);
+      start_t = start.tv_sec + double(start.tv_usec) / 1e6;
+      end_t = end.tv_sec + double(end.tv_usec) / 1e6;
+      t_diff = end_t - start_t;
+      
+      control_times++;
+
+      // Discard the first time data.
+      if (control_times == 1) {
+
+      } else {
+        accumlate_time += t_diff;
+        benchmark_file << (control_times - 1) << "\t" << std::setprecision(9) << t_diff << "\t" << accumlate_time / (control_times - 1) << "\n";
+      }
+      //
 
       //if we're done, then we'll return from execute
       if(done)
@@ -762,8 +792,8 @@ namespace move_base {
 
       //check if execution of the goal has completed in some way
 
-      ros::WallDuration t_diff = ros::WallTime::now() - start;
-      ROS_DEBUG_NAMED("move_base","Full control cycle time: %.9f\n", t_diff.toSec());
+      //ros::WallDuration t_diff = ros::WallTime::now() - start;
+      //ROS_DEBUG_NAMED("move_base","Full control cycle time: %.9f\n", t_diff.toSec());
 
       r.sleep();
       //make sure to sleep for the remainder of our cycle time
